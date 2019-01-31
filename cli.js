@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 const FsExtra = require('fs-extra');
 const readFileAsync = require('util').promisify(require('fs').readFile);
 const Path = require('path');
