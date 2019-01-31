@@ -33,8 +33,22 @@ In the meantime you can read the sources and the tests that exist.
 npm install --save sitback
 ```
   
-## Sample packaging script
+## Usage example
 
+Packing / unpacking:
+
+```cmd
+sitback --pack=deploy.json --base=C:\\Users\\User\\Projects\\git\\my_app" --out=C:\\Users\\User\\Projects\\out --git-from=prod_latest --git-to=prod_next
+
+.
+.
+.
+
+sitback --unpack=/var/incoming/my_app.json --out=/var/app
+sitback --unpack=/var/incoming/another_app.json --out=/var/another_app
+```
+
+`deploy.json`:
 ```json
 [
     {
