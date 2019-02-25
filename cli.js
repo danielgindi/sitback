@@ -57,26 +57,30 @@ if ((!!cliArgs.pack === !!cliArgs.unpack) || // not specified or both specified
                 packer
                     .on('action', /**PackageActionDefinition*/action => {
                         if (!action.description) return;
-                        
-                        console.log('  . ' + action.description);
+
+                        console.log('  . Action: ' + action.description);
+                    })
+                    .on('action_start', /**PackageActionDefinition*/action => {
+                        if (!action.description) return;
 
                         switch (action['type']) {
                             case 'msbuild':
-                                console.log(`  . Performing MSBuild of ${action.options.solution}...`);
+                                console.log(`  .. Performing MSBuild of ${action.options.solution}...`);
                                 break;
 
                             case 'devenv':
-                                console.log(`  . Performing Devenv of ${action.options.solution}...`);
+                                console.log(`  .. Performing Devenv of ${action.options.solution}...`);
                                 break;
 
                             case 'cmd':
-                                console.log(`  . Performing command ${action.options.path} with args ${action.options.args.join(' ')}...`);
+                                console.log(`  .. Performing command ${action.options.path} with args ${action.options.args.join(' ')}...`);
                                 break;
                         }
                     })
                     .on('action_skip', /**PackageActionDefinition*/action => {
-                        if (action.description)
-                            console.log('  . Skipping ' + action.description);
+                        if (!action.description) return;
+
+                        console.log('  .. Skipped');
                     })
                     .on('pack_start', () => {
                         console.log(`  . Packing...`);
