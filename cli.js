@@ -104,6 +104,7 @@ if ((!!cliArgs.pack === !!cliArgs.unpack) || // not specified or both specified
         }
         catch (err) {
             console.error('Failed: ' + err.stack.split('\n').join('        \n'));
+            process.exit(1);
         }
     }
         
@@ -129,6 +130,7 @@ if ((!!cliArgs.pack === !!cliArgs.unpack) || // not specified or both specified
         }
         catch (err) {
             console.error('Failed: ' + err.stack.split('\n').join('        \n'));
+            process.exit(1);
         }
     }
 
