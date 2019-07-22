@@ -19,7 +19,7 @@ function _parseJsonPath(path) {
         else {
             let key = part.substr(1);
             if (key[0] === '"')
-                key = part.substr(1, part.length - 2).replace(/\\(.)/g, '$1');
+                key = key.substr(1, key.length - 2).replace(/\\(.)/g, '$1');
             
             parts[i] = key;
         }
