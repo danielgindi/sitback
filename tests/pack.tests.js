@@ -312,7 +312,7 @@ describe('Packing / Unpacking', async () => {
             
             await unpacker.run(unpackPath);
 
-            let xmlTree = XmlUtil.extractSection(
+            let xmlTree = XmlUtil.extractNode(
                 XmlUtil.parseXmlAtFile(Path.join(unpackPath, 'dest.xml')));
 
             assert.deepStrictEqual(xmlTree, {

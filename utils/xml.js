@@ -73,7 +73,7 @@ class XmlUtil {
         );
     }
 
-    static extractSection(xmlTree, path = '$') {
+    static extractNode(xmlTree, path = '$') {
         let search = _findElByPath(xmlTree, path);
 
         if (search.el !== undefined) {
@@ -83,11 +83,11 @@ class XmlUtil {
         return null;
     }
 
-    static replaceSectionInto(section, xmlTree, path = '$') {
+    static replaceNodeInto(node, xmlTree, path = '$') {
         let search = _findElByPath(xmlTree, path);
 
         if (search.parent !== undefined) {
-            search.parent[search.key] = section[Object.keys(section)[0]];
+            search.parent[search.key] = node[Object.keys(node)[0]];
         }
 
         return xmlTree;
@@ -103,20 +103,20 @@ class XmlUtil {
         return xmlTree;
     }
 
-    static insertSectionInto(section, xmlTree, path = '$') {
+    static insertNodeInto(node, xmlTree, path = '$') {
         let search = _findElByPath(xmlTree, path);
 
-        let key = Object.keys(section)[0];
+        let key = Object.keys(node)[0];
 
         if (search.el !== undefined) {
             if (Array.isArray(search.el[key])) {
-                search.el[key].push(section[key]);
+                search.el[key].push(node[key]);
             }
             else if (Object.prototype.hasOwnProperty.call(search.el, key)) {
-                search.el[key] = [search.el[key], section[key]];
+                search.el[key] = [search.el[key], node[key]];
             }
             else {
-                search.el[key] = section[key];
+                search.el[key] = node[key];
             }
         }
 
