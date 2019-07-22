@@ -152,6 +152,13 @@ sitback --unpack=/var/incoming/another_app.json --out=/var/another_app
                 "dest": "resources",
                 "pattern": "**/*",
                 "mode": "git_diff"
+            },
+            {
+                "source": "web.confg",
+                "dest": "web.confg",
+                "sourceXmlPath": "$.configuration.runtime",
+                "destXmlPath": "$.configuration.runtime",
+                "mode": "xml_replace"
             }
         ]
     }

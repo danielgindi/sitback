@@ -4,6 +4,7 @@ const execSync = require('child_process').execSync;
 const FsExtra = require('fs-extra');
 const AdmZip = require('adm-zip');
 const recursiveReaddir = require('recursive-readdir');
+const XmlUtil = require('../utils/xml');
 
 const Packer = require('../lib/packer');
 const Unpacker = require('../lib/unpacker');
@@ -70,6 +71,10 @@ describe('Packing / Unpacking', async () => {
         await FsExtra.writeFile(Path.join(gitPath, 'bar/b.bin'), 'bin');
         execSync('git add . && git commit -m "added bar/b"', { cwd: gitPath });
         COMMITS.addedBarBbin = getCurrentCommit();
+
+        await FsExtra.writeFile(Path.join(gitPath, 'foo/source.xml'), '<?xml version="1.0" encoding="utf-8"?><configuration><some></some><other attr="1"><item>value</item><item>value</item></other></configuration>');
+        execSync('git add . && git commit -m "added foo/source.xml"', { cwd: gitPath });
+        COMMITS.addedFooSourceXml = getCurrentCommit();
     });
 
     afterEach(async () => {
@@ -233,14 +238,14 @@ describe('Packing / Unpacking', async () => {
                 },
             ];
             packer.gitBaseCommit = COMMITS.empty;
-            packer.gitTargetCommit = COMMITS.addedBarBbin;
+            packer.gitTargetCommit = COMMITS.addedFooSourceXml;
 
             await packer.run(destPath);
 
             let archiveEntries = new AdmZip(Path.join(destPath, 'test.zip')).getEntries().map(x => x.entryName).sort();
             let config = JSON.parse(FsExtra.readFileSync(Path.join(destPath, 'test.json'), { encoding: 'utf8' }));
 
-            assert.strictEqual(archiveEntries.length, 6);
+            assert.strictEqual(archiveEntries.length, 7);
             assert.strictEqual(config.length, 1);
             assert.deepStrictEqual(config, [{ "type":"sync", "path":"./" }]);
         }).slow('1s');
@@ -260,15 +265,70 @@ describe('Packing / Unpacking', async () => {
                 },
             ];
             packer.gitBaseCommit = COMMITS.empty;
-            packer.gitTargetCommit = COMMITS.addedBarBbin;
+            packer.gitTargetCommit = COMMITS.addedFooSourceXml;
 
             await packer.run(destPath);
 
             let archiveEntries = new AdmZip(Path.join(destPath, 'test.zip')).getEntries().map(x => x.entryName).sort();
             let config = JSON.parse(FsExtra.readFileSync(Path.join(destPath, 'test.json'), { encoding: 'utf8' }));
 
-            assert.strictEqual(archiveEntries.length, 3);
+            assert.strictEqual(archiveEntries.length, 4);
             assert.deepStrictEqual(config, [{ "type":"sync", "path":"dest_foo" }]);
+        }).slow('1s');
+        
+    });
+
+    describe('Xml', async () => {
+
+        it('All', async () => {
+
+            let packer = new Packer('test');
+            packer.rootFolder = gitPath;
+            packer.variableDefs = {};
+            packer.actions = [];
+            packer.packageRules = [
+                {
+                    'source': './foo/source.xml',
+                    'dest': './dest.xml',
+                    'sourceXmlPath': '$.configuration.other',
+                    'destXmlPath': '$.configuration.other',
+                    'mode': 'xml_replace',
+                },
+            ];
+            packer.gitBaseCommit = COMMITS.addedBarBbin;
+            packer.gitTargetCommit = COMMITS.addedFooSourceXml;
+
+            await packer.run(destPath);
+
+            // Create dest
+            await FsExtra.writeFile(Path.join(unpackPath, 'dest.xml'), '<?xml version="1.0" encoding="utf-8"?><configuration><some>stuff</some><other some="stuff"><stuff>value</stuff></other></configuration>');
+
+            // Unpack
+            let config = JSON.parse(FsExtra.readFileSync(Path.join(destPath, 'test.json'), { encoding: 'utf8' }));
+
+            let unpacker = new Unpacker();
+            unpacker.rules = config;
+            unpacker.zipFilePath = Path.join(destPath, 'test.zip');
+            
+            await unpacker.run(unpackPath);
+
+            let xmlTree = XmlUtil.extractSection(
+                XmlUtil.parseXmlAtFile(Path.join(unpackPath, 'dest.xml')));
+
+            assert.deepStrictEqual(xmlTree, {
+                'configuration': {
+                    some: 'stuff',
+                    other: {
+                        item: [
+                            'value',
+                            'value',
+                        ],
+                        _Attribs: {
+                            attr: '1',
+                        },
+                    },
+                },
+            });
         }).slow('1s');
         
     });
@@ -290,7 +350,7 @@ describe('Packing / Unpacking', async () => {
                 },
             ];
             packer.gitBaseCommit = COMMITS.empty;
-            packer.gitTargetCommit = COMMITS.addedBarBbin;
+            packer.gitTargetCommit = COMMITS.addedFooSourceXml;
 
             await packer.run(destPath);
 
