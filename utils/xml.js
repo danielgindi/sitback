@@ -93,6 +93,16 @@ class XmlUtil {
         return xmlTree;
     }
 
+    static deleteNodeAt(xmlTree, path = '$') {
+        let search = _findElByPath(xmlTree, path);
+
+        if (search.parent !== undefined) {
+            delete search.parent[search.key];
+        }
+
+        return xmlTree;
+    }
+
     static insertSectionInto(section, xmlTree, path = '$') {
         let search = _findElByPath(xmlTree, path);
 
