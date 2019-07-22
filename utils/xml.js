@@ -39,6 +39,7 @@ function _findElByPath(tree, path) {
         if (!el) {
             parent = undefined;
             el = undefined;
+            break;
         }
 
         parent = el;
