@@ -11,7 +11,7 @@ const Unpacker = require('./lib/unpacker');
 /* eslint-disable no-console */
 
 const cliArgs = require('commander')
-    .version('0.1.0')
+    .version(require('./package.json').version)
     .option('-p, --pack     <path.json>', 'The package config file to pack')
     .option('-u, --unpack   <path.json>', 'The package config file to unpack')
     .option('-b, --base     <path>', 'The base folder on which to run the packaging')
