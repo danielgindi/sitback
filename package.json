@@ -1,6 +1,6 @@
 {
   "name": "sitback",
-  "version": "0.3.8",
+  "version": "0.3.9",
   "description": "A git diff based approach to package and deploy server apps of any kind.",
   "main": "index.js",
   "bin": "cli.js",
