@@ -2,31 +2,31 @@ module.exports = {
     env: {
         es6: true,
         browser: false,
-        node: true
+        node: true,
     },
     parserOptions: {
         ecmaVersion: 2018,
-        sourceType: "module"
+        sourceType: "module",
     },
     globals: {
-        "__base": true
+        "__base": true,
     },
     extends: ["eslint:recommended"],
     rules: {
         "semi": ["warn", "always"],
         "comma-dangle": ["warn", "always-multiline"],
         "no-var": ["warn"],
-        "arrow-spacing": ["error", {"before": true, "after": true}],
-        "space-infix-ops": ["warn", {"int32Hint": true}],
-        "keyword-spacing": ["warn", {"before": true, "after": true}],
+        "arrow-spacing": ["error", { "before": true, "after": true }],
+        "space-infix-ops": ["warn", { "int32Hint": true }],
+        "keyword-spacing": ["warn", { "before": true, "after": true }],
         "space-unary-ops": [
             "warn",
             {
                 "words": true,
                 "nonwords": false,
-            }
+            },
         ],
-        "comma-spacing": ["warn", {"before": false, "after": true}],
+        "comma-spacing": ["warn", { "before": false, "after": true }],
         "object-curly-spacing": ["warn", "always"],
         //"arrow-parens": ["warn", "as-needed"],
         "no-unused-vars": ["error", {

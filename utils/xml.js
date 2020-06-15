@@ -64,13 +64,13 @@ class XmlUtil {
 
         return XmlUtil.parseXml(
             documentSource,
-            { preserveAttributes: true, preserveDocumentNode: true, preserveWhitespace: true }
+            { preserveAttributes: true, preserveDocumentNode: true, preserveWhitespace: true },
         );
     }
     static parseXml(xml) {
         return XML.parse(
             xml,
-            { preserveAttributes: true, preserveDocumentNode: true, preserveWhitespace: true }
+            { preserveAttributes: true, preserveDocumentNode: true, preserveWhitespace: true },
         );
     }
 

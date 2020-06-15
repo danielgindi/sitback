@@ -90,7 +90,7 @@ if ((!!cliArgs.pack === !!cliArgs.unpack) || // not specified or both specified
                             ` . Trying to add duplicate file ${file.name}:` +
                             `\n   Existing source: ${file.source} with size ${file.size}.` +
                             `\n   New source: ${file.newSource} with size ${file.newSize}.` +
-                            `\n   Skipping...`
+                            `\n   Skipping...`,
                         );
                     })
                     .on('warning', warning => {
@@ -124,7 +124,7 @@ if ((!!cliArgs.pack === !!cliArgs.unpack) || // not specified or both specified
             unpacker.rules = json;
             unpacker.zipFilePath = Path.join(
                 Path.dirname(inputConfig),
-                Path.basename(inputConfig, Path.extname(inputConfig)) + '.zip'
+                Path.basename(inputConfig, Path.extname(inputConfig)) + '.zip',
             );
             await unpacker.run(out);
         }
