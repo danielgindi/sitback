@@ -1,7 +1,6 @@
 import { spawn } from 'child_process';
 import Fs from 'fs';
 
-/** */
 class MsbuildUtil {
 
     /** @returns {string} */
