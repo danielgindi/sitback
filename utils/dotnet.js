@@ -23,7 +23,7 @@ class DotnetUtil {
 
     /**
      * @param {object} options
-     * @param {string} options.action
+     * @param {string} options.command
      * @param {string[]=} options.args
      * @param {boolean=} options.verbose
      * @param {string=} options.cwd
@@ -33,7 +33,7 @@ class DotnetUtil {
         let msbuild = await this.detectDotnetPath();
         let args = [];
 
-        args.push(options.action);
+        args.push(options.command);
 
         if (Array.isArray(options.args)) {
             args.push(...options.args);
