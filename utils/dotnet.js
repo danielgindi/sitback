@@ -30,7 +30,7 @@ class DotnetUtil {
      * @param {Object<string, string>} options.props
      */
     static async runDotnet(options) {
-        let msbuild = await this.detectDotnetPath();
+        let dotnetPath = await this.detectDotnetPath();
         let args = [];
 
         args.push(options.command);
@@ -46,7 +46,7 @@ class DotnetUtil {
         }
 
         await new Promise((resolve, reject) => {
-            let subp = spawn(msbuild, args, { cwd: options['cwd'] || undefined });
+            let subp = spawn(dotnetPath, args, { cwd: options['cwd'] || undefined });
 
             let stderr = [], stdout = [];
             subp.stderr.on('data', data => stderr.push(data));
