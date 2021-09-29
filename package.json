@@ -1,6 +1,6 @@
 {
   "name": "sitback",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "description": "A git diff based approach to package and deploy server apps of any kind.",
   "type": "module",
   "exports": "./index.js",
