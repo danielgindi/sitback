@@ -1,5 +1,5 @@
-const XML = require('pixl-xml');
-const Fs = require('fs');
+import XML from 'pixl-xml';
+import Fs from 'fs';
 
 function _parseJsonPath(path) {
     if (!path.startsWith('$'))
@@ -7,7 +7,7 @@ function _parseJsonPath(path) {
 
     path = path.substr(1);
 
-    let parts = path.match(/\[[0-9]+\]|\.[$A-Za-z_][0-9A-Za-z_$]*|\."(?:[^"\\]|\\.)*"/g) || [];
+    let parts = path.match(/\[[0-9]+]|\.[$A-Za-z_][0-9A-Za-z_$]*|\."(?:[^"\\]|\\.)*"/g) || [];
 
     for (let i = 0; i < parts.length; i++) {
         const part = parts[i];
@@ -15,16 +15,15 @@ function _parseJsonPath(path) {
         if (part[0] === '[') {
             let index = part.substr(1, part.length - 2);
             parts[i] = parseInt(index, 10);
-        }
-        else {
+        } else {
             let key = part.substr(1);
             if (key[0] === '"')
                 key = key.substr(1, key.length - 2).replace(/\\(.)/g, '$1');
-            
+
             parts[i] = key;
         }
     }
-    
+
     return parts;
 }
 
@@ -45,7 +44,7 @@ function _findElByPath(tree, path) {
         parent = el;
         el = el[key];
         matchedKey = key;
-            
+
         if (typeof key !== 'number')
             name = key;
     }
@@ -67,6 +66,7 @@ class XmlUtil {
             { preserveAttributes: true, preserveDocumentNode: true, preserveWhitespace: true },
         );
     }
+
     static parseXml(xml) {
         return XML.parse(
             xml,
@@ -78,9 +78,9 @@ class XmlUtil {
         let search = _findElByPath(xmlTree, path);
 
         if (search.el !== undefined) {
-            return search.name === null ? search.el : { [search.name]: search.el } ;
+            return search.name === null ? search.el : { [search.name]: search.el };
         }
-        
+
         return null;
     }
 
@@ -112,21 +112,19 @@ class XmlUtil {
         if (search.el !== undefined) {
             if (Array.isArray(search.el[key])) {
                 search.el[key].push(node[key]);
-            }
-            else if (Object.prototype.hasOwnProperty.call(search.el, key)) {
+            } else if (Object.prototype.hasOwnProperty.call(search.el, key)) {
                 search.el[key] = [search.el[key], node[key]];
-            }
-            else {
+            } else {
                 search.el[key] = node[key];
             }
         }
 
         return xmlTree;
     }
-    
+
     static stringify(xmlTree) {
         return XML.stringify(xmlTree, false, 0, '  ', '\n', false);
     }
 }
 
-module.exports = XmlUtil;
+export default XmlUtil;

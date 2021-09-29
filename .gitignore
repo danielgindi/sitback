@@ -63,4 +63,4 @@ typings/
 # VSCode
 .vscode
 
-tests/workdir
+tests/workdir*

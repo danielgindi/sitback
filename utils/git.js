@@ -1,4 +1,7 @@
-const execAsync = require('util').promisify(require('child_process').exec);
+import { exec } from 'child_process';
+import { promisify } from 'util';
+
+const execAsync = promisify(exec);
 
 /**
  * Git diff status
@@ -40,7 +43,7 @@ class GitUtil {
 
         let list = stdout.split('\n').filter(x => !!x);
         let files = list.map(line => {
-            let [ status, path, toPath ] = line.split('\t');
+            let [status, path, toPath] = line.split('\t');
             let statusCode = status.trim()[0];
             path = path.trim();
             toPath = toPath ? toPath.trim() : null;
@@ -75,4 +78,4 @@ class GitUtil {
 
 GitUtil.GitDiffStatus = GitDiffStatus;
 
-module.exports = GitUtil;
+export default GitUtil;

@@ -1,7 +1,7 @@
-const Packer = require('./lib/packer');
-const Unpacker = require('./lib/unpacker');
+import Packer from './lib/packer';
+import Unpacker from './lib/unpacker';
 
-module.exports = {
-    Packer: Packer,
-    Unpacker: Unpacker,
+export {
+    Packer,
+    Unpacker,
 };

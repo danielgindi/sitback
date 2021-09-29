@@ -1,5 +1,5 @@
-const { spawn } = require('child_process');
-const Fs = require('fs');
+import { spawn } from 'child_process';
+import Fs from 'fs';
 
 /** */
 class MsbuildUtil {
@@ -7,7 +7,7 @@ class MsbuildUtil {
     /** @returns {string} */
     static async detectMsbuildPath() {
         let options = [];
-        
+
         for (let programFiles of [
             process.env['ProgramFiles'],
             process.env['ProgramFiles(x86)']].filter(x => x)) {
@@ -17,7 +17,7 @@ class MsbuildUtil {
                 }
             }
         }
-        
+
         for (let path of options) {
             if (Fs.existsSync(path))
                 return path;
@@ -29,7 +29,7 @@ class MsbuildUtil {
     /** @returns {string} */
     static async detectDevenvPath() {
         let options = [];
-        
+
         for (let programFiles of [
             process.env['ProgramFiles'],
             process.env['ProgramFiles(x86)']].filter(x => x)) {
@@ -37,7 +37,7 @@ class MsbuildUtil {
                 options.push(`${programFiles}\\Microsoft Visual Studio\\${versionYear}\\Community\\Common7\\IDE\\devenv.exe`);
             }
         }
-        
+
         for (let path of options) {
             if (Fs.existsSync(path))
                 return path;
@@ -57,7 +57,7 @@ class MsbuildUtil {
     static async runMsbulid(options) {
         let msbuild = await this.detectMsbuildPath();
         let args = [];
-        
+
         args.push(options.solution);
 
         if (options.target) {
@@ -69,7 +69,7 @@ class MsbuildUtil {
                 args.push(`/p:${key}=${options.props[key]}`);
             }
         }
-        
+
         await new Promise((resolve, reject) => {
             let subp = spawn(msbuild, args, { cwd: options['cwd'] || undefined });
 
@@ -122,7 +122,7 @@ class MsbuildUtil {
     static async runDevenv(options) {
         let devenv = await this.detectDevenvPath();
         let args = [];
-        
+
         args.push(options.solution);
         args.push('/' + options.action);
 
@@ -139,7 +139,7 @@ class MsbuildUtil {
             args.push('/ProjectConfig');
             args.push(options.projectConfiguration);
         }
-        
+
         await new Promise((resolve, reject) => {
             let subp = spawn(devenv, args, { cwd: options['cwd'] || undefined });
 
@@ -169,4 +169,4 @@ class MsbuildUtil {
 
 }
 
-module.exports = MsbuildUtil;
+export default MsbuildUtil;

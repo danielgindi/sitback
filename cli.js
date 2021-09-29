@@ -1,24 +1,29 @@
 #!/usr/bin/env node
 
-const FsExtra = require('fs-extra');
-const readFileAsync = require('util').promisify(require('fs').readFile);
-const Path = require('path');
-const stripJsonComments = require('strip-json-comments');
+import Fs from 'fs';
+import FsExtra from 'fs-extra';
+import Path from 'path';
+import stripJsonComments from 'strip-json-comments';
+import Packer from './lib/packer.js';
+import Unpacker from './lib/unpacker.js';
+import Commander from 'commander';
+import { fileURLToPath } from 'url';
 
-const Packer = require('./lib/packer');
-const Unpacker = require('./lib/unpacker');
+const __dirname = Path.dirname(fileURLToPath(import.meta.url));
+const packageVersion = JSON.parse(stripJsonComments(Fs.readFileSync(Path.resolve(__dirname, './package.json'), { encoding: 'utf8' }))).version;
 
 /* eslint-disable no-console */
 
-const cliArgs = require('commander')
-    .version(require('./package.json').version)
+Commander.program
     .option('-p, --pack     <path.json>', 'The package config file to pack')
     .option('-u, --unpack   <path.json>', 'The package config file to unpack')
     .option('-b, --base     <path>', 'The base folder on which to run the packaging')
     .option('-o, --out      <path>', 'Output folder where to put the results (when packing only- will be emptied and created)')
     .option('    --git-from <commit>', 'Base commit to diff from (Defaults to `latest`)')
     .option('    --git-to   <commit>', 'Target commit to diff to (Defaults to `head`')
-    .parse(process.argv);
+    .version(packageVersion);
+
+const cliArgs = Commander.program.parse(process.argv).opts();
 
 if (!cliArgs.gitFrom)
     cliArgs.gitFrom = 'latest';
@@ -29,7 +34,7 @@ if (!cliArgs.gitTo)
 if ((!!cliArgs.pack === !!cliArgs.unpack) || // not specified or both specified
     (cliArgs.pack && (!cliArgs.base || !cliArgs.out)) || // missing opts for --pack
     (cliArgs.unpack && (!cliArgs.out))) { // missing opts for --unpack
-    cliArgs.help();
+    Commander.program.help();
     process.exit();
 }
 
@@ -41,7 +46,7 @@ if ((!!cliArgs.pack === !!cliArgs.unpack) || // not specified or both specified
 
             await FsExtra.emptyDir(out);
 
-            let json = JSON.parse(stripJsonComments(await readFileAsync(cliArgs.pack, { encoding: 'utf8' })));
+            let json = JSON.parse(stripJsonComments(await Fs.promises.readFile(cliArgs.pack, { encoding: 'utf8' })));
 
             for (let packageDef of json) {
                 console.log(`> Packaging ${packageDef['name']}...`);
@@ -107,7 +112,7 @@ if ((!!cliArgs.pack === !!cliArgs.unpack) || // not specified or both specified
             process.exit(1);
         }
     }
-        
+
     if (cliArgs.unpack) {
         try {
             let out = Path.resolve(cliArgs.out, './');
@@ -118,7 +123,7 @@ if ((!!cliArgs.pack === !!cliArgs.unpack) || // not specified or both specified
             if (!FsExtra.existsSync(inputConfig) && FsExtra.existsSync(inputConfig + '.json'))
                 inputConfig = inputConfig + '.json';
 
-            let json = JSON.parse(stripJsonComments(await readFileAsync(inputConfig, { encoding: 'utf8' })));
+            let json = JSON.parse(stripJsonComments(await Fs.promises.readFile(inputConfig, { encoding: 'utf8' })));
 
             let unpacker = new Unpacker();
             unpacker.rules = json;
