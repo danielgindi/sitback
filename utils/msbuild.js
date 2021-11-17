@@ -11,7 +11,7 @@ class MsbuildUtil {
             process.env['ProgramFiles'],
             process.env['ProgramFiles(x86)']].filter(x => x)) {
             for (let versionCode of ['Current', '17.0', '15.0', '14.0']) {
-                for (let versionYear of ['2017', '2019', '2022']) {
+                for (let versionYear of ['2022', '2019', '2017']) {
                     options.push(`${programFiles}\\Microsoft Visual Studio\\${versionYear}\\Community\\MSBuild\\${versionCode}\\Bin\\MSBuild.exe`);
                 }
             }
@@ -32,7 +32,7 @@ class MsbuildUtil {
         for (let programFiles of [
             process.env['ProgramFiles'],
             process.env['ProgramFiles(x86)']].filter(x => x)) {
-            for (let versionYear of ['2017', '2019', '2022']) {
+            for (let versionYear of ['2022', '2019', '2017']) {
                 options.push(`${programFiles}\\Microsoft Visual Studio\\${versionYear}\\Community\\Common7\\IDE\\devenv.exe`);
             }
         }
