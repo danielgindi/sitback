@@ -63,6 +63,12 @@ class DotnetUtil {
                     return reject(new Error(Buffer.concat(stderr).toString('utf8')));
                 }
 
+                let stdoutText = Buffer.concat(stdout).toString('utf8');
+
+                if (/\): error /.test(stdoutText)) {
+                    return reject(new Error(stdoutText.match(/\): error ([\s\S]*)\r\n/)[1].trim()));
+                }
+
                 resolve();
             });
 
