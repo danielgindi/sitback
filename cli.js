@@ -6,7 +6,7 @@ import Path from 'path';
 import stripJsonComments from 'strip-json-comments';
 import Packer from './lib/packer.js';
 import Unpacker from './lib/unpacker.js';
-import Commander from 'commander';
+import { program as commanderProgram } from 'commander';
 import { fileURLToPath } from 'url';
 
 const __dirname = Path.dirname(fileURLToPath(import.meta.url));
@@ -14,7 +14,7 @@ const packageVersion = JSON.parse(stripJsonComments(Fs.readFileSync(Path.resolve
 
 /* eslint-disable no-console */
 
-Commander.program
+commanderProgram
     .option('-p, --pack     <path.json>', 'The package config file to pack')
     .option('-u, --unpack   <path.json>', 'The package config file to unpack')
     .option('-b, --base     <path>', 'The base folder on which to run the packaging')
@@ -23,7 +23,7 @@ Commander.program
     .option('    --git-to   <commit>', 'Target commit to diff to (Defaults to `head`')
     .version(packageVersion);
 
-const cliArgs = Commander.program.parse(process.argv).opts();
+const cliArgs = commanderProgram.parse(process.argv).opts();
 
 if (!cliArgs.gitFrom)
     cliArgs.gitFrom = 'latest';
@@ -34,7 +34,7 @@ if (!cliArgs.gitTo)
 if ((!!cliArgs.pack === !!cliArgs.unpack) || // not specified or both specified
     (cliArgs.pack && (!cliArgs.base || !cliArgs.out)) || // missing opts for --pack
     (cliArgs.unpack && (!cliArgs.out))) { // missing opts for --unpack
-    Commander.program.help();
+    commanderProgram.help();
     process.exit();
 }
 
