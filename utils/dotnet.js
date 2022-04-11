@@ -63,17 +63,29 @@ class DotnetUtil {
                     return reject(new Error(Buffer.concat(stderr).toString('utf8')));
                 }
 
-                if (exitCode !== 0)
+                let stdoutText = Buffer.concat(stdout).toString('utf8');
+                let stdoutErrorText = '';
+
+                if (/\): error /.test(stdoutErrorText)) {
+                    stdoutErrorText = stdoutText.match(/\): error ([\s\S]*)\r\n/)[1].trim();
+                } else if (/Failed/.test(stdoutErrorText)) {
+                    stdoutErrorText = stdoutText.match(/Failed([\s\S]*)/)[1].trim();
+                }
+
+                if (exitCode !== 0) {
                     return reject(
                         stderr.length
                             ? new Error(Buffer.concat(stderr).toString('utf8'))
-                            : new Error(`Exited with code: ${exitCode}`),
+                            : stdoutErrorText
+                                ? new Error(stdoutErrorText)
+                                : stdout.length
+                                    ? new Error(Buffer.concat(stdout).toString('utf8'))
+                                    : new Error(`Exited with code: ${exitCode}`),
                     );
+                }
 
-                let stdoutText = Buffer.concat(stdout).toString('utf8');
-
-                if (/\): error |Error Message:/.test(stdoutText)) {
-                    return reject(new Error(stdoutText.match(/\): error ([\s\S]*)\r\n/)[1].trim()));
+                if (/\): error /.test(stdoutText)) {
+                    return reject(new Error(stdoutErrorText));
                 }
 
                 resolve();
