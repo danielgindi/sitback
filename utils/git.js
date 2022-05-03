@@ -38,7 +38,8 @@ class GitUtil {
             cwd: folder || undefined,
         });
 
-        if (stderr)
+        if (stderr &&
+            (!/warning: /.test(stderr) || /error:/i.test(stderr.replace(/Error: warning:/g, 'Warning:'))))
             throw new Error(stderr);
 
         let list = stdout.split('\n').filter(x => !!x);
