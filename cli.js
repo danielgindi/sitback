@@ -160,6 +160,9 @@ if ((!!cliArgs.pack === !!cliArgs.unpack) || // not specified or both specified
                         .on('pack_start', () => {
                             console.log(`  . Packing...`);
                         })
+                        .on('pack_skip', () => {
+                            console.log(`  . Skipped packing, due to zero packing rules.`);
+                        })
                         .on('duplicate_file', file => {
                             console.warn(
                                 ` . Trying to add duplicate file ${file.name}:` +
