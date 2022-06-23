@@ -119,7 +119,9 @@ if ((!!cliArgs.pack === !!cliArgs.unpack) || // not specified or both specified
                         await executePackageDef(executeOnceDef);
                     }
 
-                    console.log(`> Packaging ${packageDef['name']}...`);
+                    if (resolved.packageRules.length > 0)
+                        console.log(`> Packaging ${packageDef['name']}...`);
+                    else console.log(`> Executing ${packageDef['name']}...`);
 
                     const packer = new Packer(packageDef['name']);
                     packer.rootFolder = Path.resolve(cliArgs.base || process.cwd(), './');
