@@ -48,61 +48,141 @@ if ((!!cliArgs.pack === !!cliArgs.unpack) || // not specified or both specified
 
             let json = JSON.parse(stripJsonComments(await Fs.promises.readFile(cliArgs.pack, { encoding: 'utf8' })));
 
-            for (let packageDef of json) {
-                console.log(`> Packaging ${packageDef['name']}...`);
+            let executedOnce = new Set();
+            let executing = new Set();
+            let resolving = new Set();
 
-                const packer = new Packer(packageDef['name']);
-                packer.rootFolder = Path.resolve(cliArgs.base || process.cwd(), './');
-                packer.variableDefs = packageDef['variables'];
-                packer.actions = packageDef['actions'];
-                packer.packageRules = packageDef['package'];
-                packer.gitBaseCommit = cliArgs.gitFrom;
-                packer.gitTargetCommit = cliArgs.gitTo;
+            const resolvePackageDefOptions = packageDef => {
+                if (resolving.has(packageDef)) {
+                    console.error(`> Circular dependency on '${packageDef['name']}'.`);
+                    throw new Error(`A circular dependency was found while trying to resolve package '${packageDef['name']}'`);
+                }
 
-                packer
-                    .on('action', /**PackageActionDefinition*/action => {
-                        if (!action.description) return;
+                resolving.add(packageDef);
 
-                        console.log('  . Action: ' + action.description);
-                    })
-                    .on('action_start', /**PackageActionDefinition*/action => {
-                        if (!action.description) return;
+                try {
+                    const imports = [].concat(packageDef['import'] ?? []);
+                    const executeOncePackages = [];
+                    const importedVariables = {};
+                    const importedActions = [];
+                    const importedPackageRules = [];
 
-                        switch (action['type']) {
-                            case 'msbuild':
-                                console.log(`  .. Performing MSBuild of ${action.options.solution}...`);
-                                break;
-
-                            case 'devenv':
-                                console.log(`  .. Performing Devenv of ${action.options.solution}...`);
-                                break;
-
-                            case 'cmd':
-                                console.log(`  .. Performing command ${action.options.path} with args ${action.options.args.join(' ')}...`);
-                                break;
+                    for (let importName of imports) {
+                        const importedPackageDef = json.find(p => p.name === importName);
+                        if (!importedPackageDef) {
+                            console.warn(`  .. Imported '${importName}' in '${packageDef['name']}' was not found!`);
+                            continue;
                         }
-                    })
-                    .on('action_skip', /**PackageActionDefinition*/action => {
-                        if (!action.description) return;
 
-                        console.log('  .. Skipped');
-                    })
-                    .on('pack_start', () => {
-                        console.log(`  . Packing...`);
-                    })
-                    .on('duplicate_file', file => {
-                        console.warn(
-                            ` . Trying to add duplicate file ${file.name}:` +
-                            `\n   Existing source: ${file.source} with size ${file.size}.` +
-                            `\n   New source: ${file.newSource} with size ${file.newSize}.` +
-                            `\n   Skipping...`,
-                        );
-                    })
-                    .on('warning', warning => {
-                        console.warn(warning);
-                    });
+                        if (importedPackageDef['execute_once']) {
+                            executeOncePackages.push(importedPackageDef);
+                            continue;
+                        }
 
-                await packer.run(out);
+                        let resolved = resolvePackageDefOptions(importedPackageDef);
+                        Object.assign(importedVariables, resolved.variables);
+                        importedActions.push(...resolved.actions);
+                        importedPackageRules.push(...resolved.packageRules);
+                        executeOncePackages.push(...resolved.executeOncePackages);
+                    }
+
+                    const variables = { ...importedVariables, ...packageDef['variables'] };
+                    const actions = importedActions.concat(packageDef['actions'] ?? []);
+                    const packageRules = importedPackageRules.concat(packageDef['package'] ?? []);
+
+                    return {
+                        executeOncePackages: executeOncePackages,
+                        variables: variables,
+                        actions: actions,
+                        packageRules: packageRules,
+                    };
+                } finally {
+                    resolving.delete(packageDef);
+                }
+            };
+
+            const executePackageDef = async packageDef => {
+                if (executing.has(packageDef)) {
+                    console.warn(`> Recursive execution of ${packageDef['name']}, breaking the loop.`);
+                    return;
+                }
+
+                executing.add(packageDef);
+
+                try {
+                    const resolved = resolvePackageDefOptions(packageDef);
+
+                    for (let executeOnceDef of resolved.executeOncePackages) {
+                        if (executedOnce.has(packageDef['name']))
+                            continue;
+
+                        await executePackageDef(executeOnceDef);
+                    }
+
+                    console.log(`> Packaging ${packageDef['name']}...`);
+
+                    const packer = new Packer(packageDef['name']);
+                    packer.rootFolder = Path.resolve(cliArgs.base || process.cwd(), './');
+                    packer.variableDefs = resolved.variables;
+                    packer.actions = resolved.actions;
+                    packer.packageRules = resolved.packageRules;
+                    packer.gitBaseCommit = cliArgs.gitFrom;
+                    packer.gitTargetCommit = cliArgs.gitTo;
+
+                    packer
+                        .on('action', /**PackageActionDefinition*/action => {
+                            if (!action.description) return;
+
+                            console.log('  . Action: ' + action.description);
+                        })
+                        .on('action_start', /**PackageActionDefinition*/action => {
+                            if (!action.description) return;
+
+                            switch (action['type']) {
+                                case 'msbuild':
+                                    console.log(`  .. Performing MSBuild of ${action.options.solution}...`);
+                                    break;
+
+                                case 'devenv':
+                                    console.log(`  .. Performing Devenv of ${action.options.solution}...`);
+                                    break;
+
+                                case 'cmd':
+                                    console.log(`  .. Performing command ${action.options.path} with args ${action.options.args.join(' ')}...`);
+                                    break;
+                            }
+                        })
+                        .on('action_skip', /**PackageActionDefinition*/action => {
+                            if (!action.description) return;
+
+                            console.log('  .. Skipped');
+                        })
+                        .on('pack_start', () => {
+                            console.log(`  . Packing...`);
+                        })
+                        .on('duplicate_file', file => {
+                            console.warn(
+                                ` . Trying to add duplicate file ${file.name}:` +
+                                `\n   Existing source: ${file.source} with size ${file.size}.` +
+                                `\n   New source: ${file.newSource} with size ${file.newSize}.` +
+                                `\n   Skipping...`,
+                            );
+                        })
+                        .on('warning', warning => {
+                            console.warn(warning);
+                        });
+
+                    await packer.run(out);
+                } finally {
+                    executing.delete(packageDef);
+                }
+            };
+
+            for (let packageDef of json) {
+                if (packageDef['autoPack'] === false)
+                    continue;
+
+                await executePackageDef(packageDef);
             }
 
             console.log(`> Done.`);

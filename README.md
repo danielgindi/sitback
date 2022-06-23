@@ -9,7 +9,7 @@ And that that manual work involved something that was not automated by any stand
 If only one certain file changed, I only want to push that - to reduce deployment time and reduce server downtime.  
 If some other files changed, I want to invoke a build system, and deploy the result.  
 
-What this does is allow you to create a simple JSON script that defines the rules of when to package what and how, and then on the server side you can run the unpackage step with a single command.  
+What this does, is allow you to create a simple JSON script that defines the rules of when to package what and how, and then on the server side you can run the unpackage step with a single command.  
 
 This can be integrated in whole pipelines.  
 One example of such a pipeline would be:
@@ -19,7 +19,7 @@ One example of such a pipeline would be:
 4. If there's a new package then unpack it with a single command
 5. Restart `pm2`/`IIS`/etc.
 
-Now I can `sitback` an relax.
+Now I can `sitback` and relax.
 
 ## Documentation
 
