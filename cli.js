@@ -113,11 +113,11 @@ if ((!!cliArgs.pack === !!cliArgs.unpack) || // not specified or both specified
                     const resolved = resolvePackageDefOptions(packageDef);
 
                     for (let executeOnceDef of resolved.executeOncePackages) {
-                        if (executedOnce.has(packageDef))
+                        if (executedOnce.has(executeOnceDef))
                             continue;
 
                         await executePackageDef(executeOnceDef);
-                        executedOnce.add(packageDef);
+                        executedOnce.add(executeOnceDef);
                     }
 
                     if (resolved.packageRules.length > 0)
