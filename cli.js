@@ -74,7 +74,7 @@ if ((!!cliArgs.pack === !!cliArgs.unpack) || // not specified or both specified
                             continue;
                         }
 
-                        if (importedPackageDef['execute_once']) {
+                        if (importedPackageDef['executeOnce']) {
                             executeOncePackages.push(importedPackageDef);
                             continue;
                         }
