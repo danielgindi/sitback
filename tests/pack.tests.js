@@ -364,6 +364,143 @@ test.serial('Unpack: Complete', async t => {
     t.is(archiveEntries.length, unpackedFiles.length);
 });
 
+test.serial('Unpack: No stderr on retries', async t => {
+    t.timeout(30000);
+
+    let packer = new Packer('test');
+    packer.rootFolder = gitPath;
+    packer.variableDefs = {};
+    packer.actions = [];
+    packer.packageRules = [
+        {
+            'source': './',
+            'dest': './',
+            'pattern': '**/*',
+            'mode': 'git_diff',
+        },
+    ];
+    packer.gitBaseCommit = COMMITS.empty;
+    packer.gitTargetCommit = COMMITS.addedFooSourceXml;
+
+    await packer.run(destPath);
+
+    let stderrDirty = false;
+
+    let unpacker = new Unpacker();
+    unpacker.rules = [
+        {
+            type: 'copy',
+            path: 'foo',
+            ignoreErrors: true,
+            retry: 2,
+        },
+        {
+            type: 'delete',
+            path: 'foo',
+            skipNotFound: true,
+            ignoreErrors: true,
+            retry: 2,
+        },
+        {
+            type: 'delete',
+            path: 'foo',
+            skipNotFound: false,
+            ignoreErrors: true,
+            retry: 2,
+        },
+        {
+            type: 'sync',
+            path: 'foo',
+            ignoreErrors: true,
+            retry: 2,
+        },
+        {
+            type: 'cmd',
+            commands: [{
+                'path': 'foo',
+            }],
+            ignoreErrors: true,
+            retry: 2,
+        },
+    ];
+    unpacker.zipFilePath = Path.join(destPath, 'test.zip');
+
+    const stderrWrite = process.stderr.write;
+    process.stderr.write = function (...args) {
+        stderrDirty = true;
+        stderrWrite.call(this, ...args);
+    };
+    try {
+        await unpacker.run(unpackPath);
+    } catch (ex) {
+        console.log(ex);
+        // ignore
+    }
+    process.stderr.write = stderrWrite;
+
+    t.is(stderrDirty, false);
+});
+
+test.serial('Unpack: Has stderr when not ignored', async t => {
+    t.timeout(30000);
+
+    let packer = new Packer('test');
+    packer.rootFolder = gitPath;
+    packer.variableDefs = {};
+    packer.actions = [];
+    packer.packageRules = [
+        {
+            'source': './',
+            'dest': './',
+            'pattern': '**/*',
+            'mode': 'git_diff',
+        },
+    ];
+    packer.gitBaseCommit = COMMITS.empty;
+    packer.gitTargetCommit = COMMITS.addedFooSourceXml;
+
+    await packer.run(destPath);
+
+    const rules = [
+        {
+            type: 'cmd',
+            commands: [{
+                'path': 'foo',
+            }],
+            ignoreErrors: false,
+            retry: 1,
+        },
+    ];
+
+    let stderrDirty = false;
+    const stderrWrite = process.stderr.write;
+    process.stderr.write = function (...args) {
+        stderrDirty = true;
+        stderrWrite.call(this, ...args);
+    };
+
+    for (const rule of rules) {
+        stderrDirty = false;
+
+        let unpacker = new Unpacker();
+        unpacker.rules = [rule];
+        unpacker.zipFilePath = Path.join(destPath, 'test.zip');
+
+        try {
+            await unpacker.run(unpackPath);
+        } catch (_ignored) {
+            stderrDirty = true;
+        }
+
+        if (!stderrDirty)
+            break;
+    }
+
+    process.stderr.write = stderrWrite;
+
+    t.is(stderrDirty, true);
+});
+
 test.serial('Unpack: Two stages sequence', async t => {
     t.timeout(30000);
 
